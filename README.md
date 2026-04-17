@@ -1,4 +1,4 @@
-# Mend — Between-session memory for therapy
+# Mend-Between-session memory for therapy
 
 > *“Your therapist remembers the session. Mend remembers the week.”*
 
@@ -14,9 +14,9 @@ This repository is submitted for **Product Arena 3.0**. It reflects how I think 
 
 Digital mental health has scaled **access** (teletherapy, chat, apps). It has **not** systematically solved **continuity**: what happens **between** sessions when memory fades, insights scatter, and motivation drops. Users often report:
 
-- **Recall decay** — “I forgot what I wanted to bring up.”
-- **Preparation asymmetry** — therapists have notes; clients often have feelings without structure.
-- **Pattern blindness** — week-level themes (e.g. shame, performance, rest) rarely surface without deliberate reflection.
+- **Recall decay**-“I forgot what I wanted to bring up.”
+- **Preparation asymmetry**-therapists have notes; clients often have feelings without structure.
+- **Pattern blindness**-week-level themes (e.g. shame, performance, rest) rarely surface without deliberate reflection.
 
 That is a **gap in outcomes and engagement**, not only in content libraries. The opportunity is a product that **respects clinical boundaries** while **owning the client’s narrative arc across time**.
 
@@ -39,9 +39,9 @@ Mend sits **next to** the therapy platform the user already uses (here mocked as
 
 **Design principles baked into the MVP**
 
-1. **Explicit consent** — onboarding is a consent architecture, not a checkbox wall.
-2. **Opt-in capture** — debrief is user-started; no ambient listening story.
-3. **Actionable outputs** — debrief → brief → pulse are **three concrete artifacts**, not a feed.
+1. **Explicit consent**  onboarding is a consent architecture, not a checkbox wall.
+2. **Opt-in capture** debrief is user-started; no ambient listening story.
+3. **Actionable outputs** debrief → brief → pulse are **three concrete artifacts**, not a feed.
 
 ---
 
