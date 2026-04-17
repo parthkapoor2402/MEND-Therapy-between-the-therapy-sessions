@@ -1,4 +1,4 @@
-# Mend-Between-session memory for therapy
+# Mend : Between-session memory for therapy
 
 > *“Your therapist remembers the session. Mend remembers the week.”*
 
