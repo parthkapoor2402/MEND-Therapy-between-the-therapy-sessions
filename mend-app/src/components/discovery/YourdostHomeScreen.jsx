@@ -101,8 +101,8 @@ function ClipboardIcon() {
 
 export function YourdostHomeScreen() {
   return (
-    <div className="flex min-h-[844px] flex-col bg-white font-sans">
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+    <div className="flex min-h-0 flex-1 flex-col bg-white font-sans">
+      <div className="flex min-h-0 flex-1 flex-col">
         {/* Status bar mock */}
         <div className="flex h-6 items-center justify-between bg-mend-ydTeal px-3 text-[11px] font-medium text-white">
           <span>9:41</span>
@@ -267,18 +267,18 @@ export function YourdostHomeScreen() {
             ))}
           </div>
         </section>
-      </div>
 
-      {/* Sticky bottom CTA */}
-      <div className="flex shrink-0 items-center justify-between bg-[#00897B] px-4 py-3 text-white">
-        <span className="text-sm font-medium">Ready to talk?</span>
-        <button
-          type="button"
-          aria-label="Book a session"
-          className="rounded-full border border-white px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 active:bg-white/20"
-        >
-          Book Session
-        </button>
+        {/* Bottom CTA (inside same scroll column as Mend — avoids nested scroll trap on mobile) */}
+        <div className="flex shrink-0 items-center justify-between bg-[#00897B] px-4 py-3 text-white">
+          <span className="text-sm font-medium">Ready to talk?</span>
+          <button
+            type="button"
+            aria-label="Book a session"
+            className="rounded-full border border-white px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 active:bg-white/20"
+          >
+            Book Session
+          </button>
+        </div>
       </div>
     </div>
   )
