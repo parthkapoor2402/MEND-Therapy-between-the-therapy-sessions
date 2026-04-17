@@ -4,7 +4,7 @@
 
 **Mend** is a product concept and working MVP for a **between-session memory layer**: a privacy-first companion that helps people **capture** what happened after therapy, **prepare** intentionally before the next session, and **see patterns** they cannot spot alone including early signals when old themes reappear.
 
-This repository is submitted for **Product Arena 3.0**. It reflects how I think as a **product manager**: grounding the build in **market and user gaps**, a **coherent journey**, a **closed value loop**, and a **clear data story**—not only UI and code.
+This repository is submitted for **Product Arena 3.0**. It reflects how I think as a **product manager**: grounding the build in **market and user gaps**, a **coherent journey**, a **closed value loop**, and a **clear data story** not only UI and code.
 
 ## Live app
 
