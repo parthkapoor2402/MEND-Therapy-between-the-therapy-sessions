@@ -6,6 +6,10 @@
 
 This repository is submitted for **Product Arena 3.0**. It reflects how I think as a **product manager**: grounding the build in **market and user gaps**, a **coherent journey**, a **closed value loop**, and a **clear data story**—not only UI and code.
 
+## Live app
+
+**Production (Vercel):** [https://menddeployement.vercel.app/](https://menddeployement.vercel.app/)
+
 ## How I think about this problem (PM lens)
 
 ### Market gap: the “Wednesday problem”

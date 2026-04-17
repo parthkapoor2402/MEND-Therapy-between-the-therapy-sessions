@@ -26,3 +26,5 @@ npx vitest run       # CI-style single run
 ## Deploy
 
 `vercel.json` is included for SPA routing. Deploy with **root directory** = this folder (`mend-app`).
+
+**Live production:** [https://menddeployement.vercel.app/](https://menddeployement.vercel.app/)
