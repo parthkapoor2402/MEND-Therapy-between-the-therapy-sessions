@@ -1,0 +1,6 @@
+{
+  "installCommand": "cd mend-app && npm install",
+  "buildCommand": "cd mend-app && npm run build",
+  "outputDirectory": "mend-app/dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

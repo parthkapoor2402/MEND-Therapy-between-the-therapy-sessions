@@ -1,4 +1,4 @@
-# Mend : Between-session memory for therapy
+# Mend: between-session memory for therapy
 
 > *“Your therapist remembers the session. Mend remembers the week.”*
 
@@ -6,17 +6,15 @@
 
 This repository is submitted for **Product Arena 3.0**. It reflects how I think as a **product manager**: grounding the build in **market and user gaps**, a **coherent journey**, a **closed value loop**, and a **clear data story**—not only UI and code.
 
----
-
 ## How I think about this problem (PM lens)
 
 ### Market gap: the “Wednesday problem”
 
 Digital mental health has scaled **access** (teletherapy, chat, apps). It has **not** systematically solved **continuity**: what happens **between** sessions when memory fades, insights scatter, and motivation drops. Users often report:
 
-- **Recall decay**-“I forgot what I wanted to bring up.”
-- **Preparation asymmetry**-therapists have notes; clients often have feelings without structure.
-- **Pattern blindness**-week-level themes (e.g. shame, performance, rest) rarely surface without deliberate reflection.
+- **Recall decay** — “I forgot what I wanted to bring up.”
+- **Preparation asymmetry** — therapists have notes; clients often have feelings without structure.
+- **Pattern blindness** — week-level themes (e.g. shame, performance, rest) rarely surface without deliberate reflection.
 
 That is a **gap in outcomes and engagement**, not only in content libraries. The opportunity is a product that **respects clinical boundaries** while **owning the client’s narrative arc across time**.
 
@@ -31,19 +29,15 @@ That is a **gap in outcomes and engagement**, not only in content libraries. The
 
 **Mend’s wedge:** opt-in, **session-adjacent**, **client-controlled** memory—structured enough for **briefs** and **patterns**, human enough for **trust**.
 
----
-
 ## Product overview
 
 Mend sits **next to** the therapy platform the user already uses (here mocked as **YourDOST**). It does not replace a therapist; it **extends the client’s ability to show up prepared and self-aware**.
 
 **Design principles baked into the MVP**
 
-1. **Explicit consent**  onboarding is a consent architecture, not a checkbox wall.
-2. **Opt-in capture** debrief is user-started; no ambient listening story.
-3. **Actionable outputs** debrief → brief → pulse are **three concrete artifacts**, not a feed.
-
----
+1. **Explicit consent** — onboarding is a consent architecture, not a checkbox wall.
+2. **Opt-in capture** — debrief is user-started; no ambient listening story.
+3. **Actionable outputs** — debrief → brief → pulse are **three concrete artifacts**, not a feed.
 
 ## User journey: from discovery to habit
 
@@ -59,9 +53,7 @@ Mend sits **next to** the therapy platform the user already uses (here mocked as
 **End-to-end flow (one sentence):**  
 Discover Mend → consent and configure → land on home → **debrief** after a session → review **brief** before the next one → scan **pulse** on Sunday → optionally push insights into the next brief—**repeat each cycle**.
 
----
-
-## The three features—and why they matter
+## The three features (and why they matter)
 
 ### 1. Guided debrief (Feature 1)
 
@@ -80,8 +72,6 @@ Discover Mend → consent and configure → land on home → **debrief** after a
 **What it is:** Three insight cards—**recurring pattern**, **shift point**, and **regression detected** (before/after quotes)—plus **add to brief** and confirmation toast.
 
 **Impact:** Surfaces **cross-session structure** and **early warning** when Week-1 language reappears in new words—supporting **self-awareness** and **timely therapist collaboration**.
-
----
 
 ## The correct product loop (retention & value)
 
@@ -120,8 +110,6 @@ flowchart LR
 - Pulse weekly return + “add to brief” rate  
 - Self-reported “felt more prepared” (in-app micro-survey)
 
----
-
 ## Data pipeline (conceptual architecture)
 
 **MVP in this repo:** client-side **mock data** and **Zustand** state to demonstrate flows and UI. **Production intent** below is how I’d describe the pipeline to engineering, trust, and clinical advisors.
@@ -156,8 +144,6 @@ flowchart TB
 3. **Therapist share is outbound and explicit** — user initiates; no silent exfiltration.
 4. **Pattern models** — regression detection should be **explainable** (quotes, time windows) and **conservative** in language to avoid iatrogenic alarm.
 
----
-
 ## Repository layout
 
 | Path | Purpose |
@@ -165,8 +151,6 @@ flowchart TB
 | `mend-app/` | React + Vite application, tests, and deployment config |
 
 All install, dev, test, and build commands run from **`mend-app/`**.
-
----
 
 ## Development
 
@@ -194,9 +178,23 @@ cd mend-app
 npm run build
 ```
 
-Output: `mend-app/dist/`. **Vercel:** set project root to `mend-app` (or deploy from that directory); `vercel.json` includes SPA rewrites.
+Output: `mend-app/dist/`.
 
----
+### Deploy on Vercel (GitHub → production)
+
+This repo has a **`vercel.json` at the repository root** so Vercel can build from **GitHub without** setting a subfolder first: it runs `npm install` and `npm run build` **inside `mend-app`**, publishes **`mend-app/dist`**, and rewrites all routes to **`index.html`** for React Router.
+
+1. [vercel.com/new](https://vercel.com/new) → **Import** your GitHub repo **`mend`**.
+2. Leave **Root Directory** as **`.`** (repo root) so the root **`vercel.json`** is used—or set Root Directory to **`mend-app`** and remove reliance on the root file (then only **`mend-app/vercel.json`** applies).
+3. **Framework Preset:** Vite (optional if build commands are detected).
+4. Deploy, then open the production URL and test **`/`**, **`/home`**, **`/pulse`** (hard refresh on a deep link).
+
+CLI from your machine:
+
+```bash
+cd mend-app
+npx vercel --prod
+```
 
 ## Tech stack
 
@@ -205,13 +203,9 @@ Output: `mend-app/dist/`. **Vercel:** set project root to `mend-app` (or deploy 
 - Zustand  
 - Vitest + React Testing Library  
 
----
-
 ## Privacy (product promise)
 
 Mend is framed as **opt-in only**, with **on-device** processing as the default story and **no background recording**. Any cloud or share path must remain **user-initiated** and **transparent** in a production system.
-
----
 
 ## Author
 
