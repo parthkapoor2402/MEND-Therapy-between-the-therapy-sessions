@@ -118,7 +118,7 @@ export function OnboardingPage() {
     'mt-4 w-full min-h-[48px] rounded-full bg-mend-green px-6 py-3 text-center text-sm font-semibold text-white shadow-sm transition-colors hover:bg-mend-green/90 active:bg-mend-green/80 active:scale-[0.99]'
 
   return (
-    <PageTransition className="flex min-h-full min-h-[844px] flex-col bg-mend-bg font-sans">
+    <PageTransition className="flex min-h-0 w-full flex-col bg-mend-bg font-sans max-sm:min-h-[min(100dvh,844px)] sm:min-h-0">
       <AnimatePresence mode="wait">
         {currentScreen === 0 && (
           <motion.div
@@ -127,9 +127,9 @@ export function OnboardingPage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
             transition={{ duration: 0.25 }}
-            className="flex min-h-0 flex-1 flex-col"
+            className="flex min-h-0 flex-col max-sm:min-h-[min(100dvh,844px)] sm:min-h-0"
           >
-              <div className="flex flex-1 flex-col items-center justify-center px-8">
+              <div className="flex flex-col items-center px-8 pt-6 max-sm:flex-1 max-sm:justify-center sm:pt-8">
                 <div className="flex items-center justify-center gap-3">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-mend-green">
                     <MendLeafWhite className="h-7 w-7" />
@@ -195,7 +195,7 @@ export function OnboardingPage() {
                 </ul>
               </div>
 
-              <div className="px-6 pb-8 pt-4">
+              <div className="shrink-0 px-6 pb-6 pt-4 sm:pb-4">
                 <ProgressDots total={4} active={0} />
                 <button
                   type="button"

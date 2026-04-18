@@ -27,10 +27,11 @@ export default function App() {
     <div className="flex min-h-[100dvh] w-full items-stretch justify-center bg-gray-200 sm:min-h-screen sm:items-center sm:py-6">
       <div
         data-testid="mend-device-frame"
-        className="relative flex h-[100dvh] max-h-[100dvh] w-full max-w-[390px] flex-col overflow-hidden bg-mend-bg sm:h-auto sm:max-h-[min(100dvh,920px)] sm:min-h-[844px] sm:rounded-[40px] sm:border-4 sm:border-gray-800 sm:shadow-2xl"
+        className="relative flex h-[100dvh] max-h-[100dvh] w-full max-w-[390px] flex-col overflow-hidden bg-mend-bg sm:h-auto sm:max-h-none sm:min-h-0 sm:overflow-visible sm:rounded-[40px] sm:border-4 sm:border-gray-800 sm:shadow-2xl"
       >
         <ScrollToTop />
-        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] [touch-action:pan-y]">
+        {/* Mobile: clip + inner scroll. sm+: frame grows with content so screenshots fit one frame without inner scrollbar. */}
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] [touch-action:pan-y] sm:flex-none sm:overflow-visible sm:overscroll-auto">
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<DiscoveryOrHome />} />

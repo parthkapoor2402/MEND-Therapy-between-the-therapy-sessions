@@ -229,7 +229,7 @@ export function YourdostHomeScreen() {
         <MendRecommendedCard />
 
         {/* Articles */}
-        <section className="px-4 pb-24 pt-2">
+        <section className="px-4 pb-4 pt-2 sm:pb-3">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-800">Explore Articles</h2>
             <button
