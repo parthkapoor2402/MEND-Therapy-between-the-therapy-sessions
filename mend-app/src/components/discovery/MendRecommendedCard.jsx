@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { useMendStore } from '../../store/useMendStore.js'
 
 function MendLeafIcon() {
   return (
@@ -21,6 +22,11 @@ function MendLeafIcon() {
 
 export function MendRecommendedCard() {
   const navigate = useNavigate()
+  const onboardingComplete = useMendStore((s) => s.onboardingComplete)
+
+  const goToMend = () => {
+    navigate(onboardingComplete ? '/home' : '/onboarding')
+  }
 
   return (
     <motion.div
@@ -76,12 +82,12 @@ export function MendRecommendedCard() {
             <span className="text-xs text-mend-textMuted">🔒 Opt-in only</span>
             <motion.button
               type="button"
-              aria-label="Try Mend free, go to onboarding"
+              aria-label={onboardingComplete ? 'Open Mend dashboard' : 'Try Mend free, go to onboarding'}
               className="rounded-full bg-mend-green px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mend-green/90 active:bg-mend-green/80"
               whileTap={{ scale: 0.97 }}
-              onClick={() => navigate('/onboarding')}
+              onClick={goToMend}
             >
-              Try free →
+              {onboardingComplete ? 'Open Mend →' : 'Try free →'}
             </motion.button>
           </div>
         </div>

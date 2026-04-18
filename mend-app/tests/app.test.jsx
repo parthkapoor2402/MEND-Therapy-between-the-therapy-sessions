@@ -24,14 +24,15 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: /YourDOST/i })).toBeInTheDocument()
   })
 
-  it('redirects / to home when onboarding is complete', () => {
+  it('still shows YourDOST at / when onboarding is complete (Mend opens from card)', () => {
     useMendStore.setState({ onboardingComplete: true })
     render(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>,
     )
-    expect(screen.queryByRole('heading', { name: /YourDOST/i })).not.toBeInTheDocument()
-    expect(screen.getByText(/Good evening, Priya/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /YourDOST/i })).toBeInTheDocument()
+    expect(screen.queryByText(/Good evening, Priya/)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Open Mend dashboard/i })).toBeInTheDocument()
   })
 })

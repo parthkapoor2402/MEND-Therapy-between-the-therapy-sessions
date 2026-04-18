@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import DiscoveryPage from './pages/DiscoveryPage.jsx'
 import OnboardingPage from './pages/OnboardingPage.jsx'
@@ -10,14 +10,8 @@ import MemoryPage from './pages/MemoryPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
 import BottomNav from './components/ui/BottomNav.jsx'
 import ScrollToTop from './components/ui/ScrollToTop.jsx'
-import { useMendStore } from './store/useMendStore.js'
 
 const SHOW_BOTTOM_NAV = ['/home', '/debrief', '/brief', '/pulse']
-
-function DiscoveryOrHome() {
-  const onboardingComplete = useMendStore((s) => s.onboardingComplete)
-  return onboardingComplete ? <Navigate to="/home" replace /> : <DiscoveryPage />
-}
 
 export default function App() {
   const location = useLocation()
@@ -34,7 +28,8 @@ export default function App() {
         <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] [touch-action:pan-y] sm:flex-none sm:overflow-visible sm:overscroll-auto">
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
-              <Route path="/" element={<DiscoveryOrHome />} />
+              {/* Root is always YourDOST discovery so shared links open the product entry first. */}
+              <Route path="/" element={<DiscoveryPage />} />
               <Route path="/onboarding" element={<OnboardingPage />} />
               <Route path="/home" element={<HomeDashboard />} />
               <Route path="/debrief" element={<DebriefPage />} />
