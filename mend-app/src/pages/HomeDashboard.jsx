@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useMendStore } from '../store/useMendStore.js'
@@ -87,6 +88,19 @@ export function HomeDashboard() {
   const onboardingComplete = useMendStore((s) => s.onboardingComplete)
   const profile = useMendStore((s) => s.profile)
   const pulsePatterns = useMendStore((s) => s.pulsePatterns)
+  const notificationSettings = useMendStore((s) => s.notificationSettings)
+
+  const [notifyBannerDismissed, setNotifyBannerDismissed] = useState(false)
+  const wantsBrowserNotifications =
+    notificationSettings.sessionReminders ||
+    notificationSettings.preSessionBrief ||
+    notificationSettings.pulseDigest
+  const showBrowserNotifyBanner =
+    !notifyBannerDismissed &&
+    wantsBrowserNotifications &&
+    typeof window !== 'undefined' &&
+    'Notification' in window &&
+    Notification.permission === 'default'
 
   const firstName = profile.fullName.split(' ')[0]
   const sessionLine = `${profile.nextSessionDate} · ${profile.nextSessionTime}`
@@ -197,6 +211,38 @@ export function HomeDashboard() {
             </div>
           </div>
         </div>
+
+        {showBrowserNotifyBanner ? (
+          <div className="mt-4 px-4">
+            <div className="flex flex-col gap-2 rounded-2xl border border-mend-ydTeal/30 bg-mend-ydTealLight/50 px-4 py-3">
+              <p className="text-sm font-semibold text-mend-textPrimary">Allow session nudges?</p>
+              <p className="text-xs leading-relaxed text-mend-textMuted">
+                Your browser needs permission for reminders and digests you turned on in onboarding. You can change this
+                anytime in Settings.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <button
+                  type="button"
+                  className="min-h-[40px] rounded-full bg-mend-green px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-mend-green/90"
+                  aria-label="Allow browser notifications for session reminders"
+                  onClick={() => {
+                    void Notification.requestPermission()
+                    setNotifyBannerDismissed(true)
+                  }}
+                >
+                  Allow notifications
+                </button>
+                <button
+                  type="button"
+                  className="min-h-[40px] rounded-full border border-mend-border bg-white px-4 py-2 text-sm font-medium text-mend-textMuted transition-colors hover:bg-gray-50"
+                  onClick={() => setNotifyBannerDismissed(true)}
+                >
+                  Not now
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {/* Section 3 — Today */}
         <div className="mt-6 px-4">

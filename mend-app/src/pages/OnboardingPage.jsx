@@ -444,8 +444,9 @@ export function OnboardingPage() {
                   className={primaryBtnClass}
                   aria-label="Continue to finish"
                   onClick={() => {
+                    const wantsNudges = remindersOn || briefOn || pulseOn
                     if (
-                      remindersOn &&
+                      wantsNudges &&
                       typeof window !== 'undefined' &&
                       'Notification' in window &&
                       Notification.permission === 'default'
