@@ -1,11 +1,8 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { mockDebriefEntries, mockPulsePatterns, mockUser } from '../data/mockData.js'
 import { useMendStore } from '../store/useMendStore.js'
 import { Tag } from '../components/ui/Tag.jsx'
 import PageTransition from '../components/ui/PageTransition.jsx'
-
-const THERAPIST_INITIALS = 'MN'
 
 function BellIcon() {
   return (
@@ -84,15 +81,51 @@ function ChevronRightMuted() {
 
 export function HomeDashboard() {
   const navigate = useNavigate()
+  const allDebriefs = useMendStore((s) => s.allDebriefs)
   const briefGenerated = useMendStore((s) => s.briefGenerated)
+  const currentBrief = useMendStore((s) => s.currentBrief)
+  const onboardingComplete = useMendStore((s) => s.onboardingComplete)
+  const profile = useMendStore((s) => s.profile)
+  const pulsePatterns = useMendStore((s) => s.pulsePatterns)
 
-  const firstName = mockUser.name.split(' ')[0]
-  const sessionLine = `${mockUser.nextSessionDate} · ${mockUser.nextSessionTime}`
-  const memorySlice = mockDebriefEntries.slice(0, 3)
-  const patternCount = mockPulsePatterns.length
+  const firstName = profile.fullName.split(' ')[0]
+  const sessionLine = `${profile.nextSessionDate} · ${profile.nextSessionTime}`
+  const nextSessionNumber = allDebriefs.length + 1
+
+  const memoryEntries =
+    allDebriefs.length > 0
+      ? allDebriefs
+          .slice(-3)
+          .reverse()
+          .map((d, i) => ({
+            debriefId: d.id,
+            answer:
+              d.answers.emotion ||
+              d.answers.belief ||
+              Object.values(d.answers)[0] ||
+              '',
+            tag: '💛',
+            tagLabel: 'Captured',
+            sessionDate: new Date(d.date).toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'short',
+            }),
+            sessionNum: allDebriefs.length - i,
+          }))
+      : []
+
+  const today = new Date().toDateString()
+  const lastDebriefDate =
+    allDebriefs.length > 0 ? new Date(allDebriefs[allDebriefs.length - 1].date).toDateString() : null
+  const debriefedToday = lastDebriefDate === today
+
+  const patternCount = pulsePatterns.length || 3
 
   return (
-    <PageTransition className="relative flex min-h-full min-h-[844px] flex-1 flex-col bg-mend-bg font-sans">
+    <PageTransition
+      className="relative flex min-h-full min-h-[844px] flex-1 flex-col bg-mend-bg font-sans"
+      data-onboarding-complete={onboardingComplete ? 'true' : 'false'}
+    >
       <div className="flex min-h-screen flex-col overflow-y-auto pb-24">
         {/* Section 1 — Header */}
         <div className="overflow-hidden rounded-b-3xl">
@@ -104,7 +137,8 @@ export function HomeDashboard() {
               <span className="text-xl font-bold text-white">mend</span>
               <button
                 type="button"
-                aria-label="Notifications"
+                aria-label="Settings"
+                onClick={() => navigate('/settings')}
                 className="rounded-full p-1 transition-opacity hover:opacity-90 active:opacity-80"
               >
                 <BellIcon />
@@ -131,20 +165,20 @@ export function HomeDashboard() {
                 NEXT SESSION
               </span>
               <span className="rounded-full bg-mend-greenLight px-2 py-0.5 text-xs font-medium text-mend-green">
-                Confirmed
+                Session {nextSessionNumber}
               </span>
             </div>
             <div className="mt-2 flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mend-ydTeal to-mend-green text-sm font-bold text-white">
-                {THERAPIST_INITIALS}
+                {profile.therapistInitials}
               </div>
               <div className="min-w-0">
-                <p className="text-base font-bold text-mend-textPrimary">{mockUser.therapistName}</p>
+                <p className="text-base font-bold text-mend-textPrimary">{profile.therapistName}</p>
                 <p className="text-sm text-mend-textMuted">{sessionLine}</p>
               </div>
             </div>
             <span className="mt-2 inline-block rounded-full bg-mend-ydTealLight px-3 py-1 text-xs font-medium text-mend-ydTeal">
-              via YourDost
+              via {profile.platform}
             </span>
             <div className="mb-3 mt-3 border-t border-mend-border" />
             <div className="flex items-center gap-2 py-1">
@@ -167,7 +201,25 @@ export function HomeDashboard() {
         {/* Section 3 — Today */}
         <div className="mt-6 px-4">
           <p className="mb-3 text-xs font-semibold tracking-widest text-mend-textMuted">TODAY</p>
-          {!briefGenerated ? (
+          {debriefedToday ? (
+            <div className="rounded-2xl border border-mend-green/20 bg-mend-greenLight p-5">
+              <div className="flex items-start">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mend-green">
+                  <CheckIconWhite />
+                </div>
+                <div className="ml-3 min-w-0 flex-1">
+                  <p className="text-base font-bold text-mend-textPrimary">Session debriefed ✓</p>
+                  <p className="mt-2 text-sm text-mend-textMuted">
+                    {Array.isArray(currentBrief) && currentBrief.length > 0
+                      ? 'Your pre-session brief is ready in the Brief tab.'
+                      : briefGenerated
+                        ? 'Your brief is being prepared for Thursday.'
+                        : 'Thanks for debriefing — your brief will appear in the Brief tab.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
             <div className="rounded-2xl border border-mend-warm/30 bg-mend-warmLight p-5">
               <div className="flex items-start">
                 <span className="text-2xl" aria-hidden>
@@ -189,20 +241,6 @@ export function HomeDashboard() {
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="rounded-2xl border border-mend-green/20 bg-mend-greenLight p-5">
-              <div className="flex items-start">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mend-green">
-                  <CheckIconWhite />
-                </div>
-                <div className="ml-3 min-w-0 flex-1">
-                  <p className="text-base font-bold text-mend-textPrimary">Session debriefed ✓</p>
-                  <p className="mt-2 text-sm text-mend-textMuted">
-                    Your brief is being prepared for Thursday.
-                  </p>
-                </div>
-              </div>
-            </div>
           )}
         </div>
 
@@ -214,23 +252,38 @@ export function HomeDashboard() {
               type="button"
               className="ml-auto text-xs text-mend-blue transition-opacity hover:opacity-80"
               aria-label="See all memories"
+              onClick={() => navigate('/memory')}
             >
               See all →
             </button>
           </div>
           <div className="-mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
-            {memorySlice.map((entry) => (
-              <article
-                key={entry.id}
-                className="w-52 shrink-0 rounded-2xl border border-mend-border bg-white p-4"
-              >
-                <Tag emoji={entry.tag} tagLabel={entry.tagLabel} />
-                <p className="mt-2 line-clamp-2 text-sm font-medium leading-snug text-mend-textPrimary">
-                  {entry.answer}
-                </p>
-                <p className="mt-2 text-xs text-mend-textMuted">Session {mockUser.sessionCount}</p>
-              </article>
-            ))}
+            {memoryEntries.length === 0
+              ? [0, 1, 2].map((slot) => (
+                  <div
+                    key={slot}
+                    className="flex w-52 shrink-0 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-mend-border bg-transparent p-4 text-center"
+                  >
+                    <span className="text-2xl" aria-hidden>
+                      🌱
+                    </span>
+                    <p className="mt-2 text-xs text-mend-textMuted">Your captures will appear here</p>
+                  </div>
+                ))
+              : memoryEntries.map((entry) => (
+                  <article
+                    key={entry.debriefId}
+                    className="w-52 shrink-0 rounded-2xl border border-mend-border bg-white p-4"
+                  >
+                    <Tag emoji={entry.tag} tagLabel={entry.tagLabel} />
+                    <p className="mt-2 line-clamp-2 text-sm font-medium leading-snug text-mend-textPrimary">
+                      {entry.answer}
+                    </p>
+                    <p className="mt-2 text-xs text-mend-textMuted">
+                      Session {entry.sessionNum} · {entry.sessionDate}
+                    </p>
+                  </article>
+                ))}
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { mockBriefBullets, mockUser } from '../data/mockData.js'
+import { useMendStore } from '../store/useMendStore.js'
 import PageTransition from '../components/ui/PageTransition.jsx'
 
 function sessionPillText() {
@@ -134,6 +135,8 @@ function LockIconMuted() {
 
 export function BriefPage() {
   const navigate = useNavigate()
+  const { currentBrief } = useMendStore()
+  const bullets = currentBrief || mockBriefBullets
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [bulletChecked, setBulletChecked] = useState({})
 
@@ -183,14 +186,14 @@ export function BriefPage() {
             Session {mockUser.sessionCount}
           </span>
           <span className="rounded-full bg-white/15 px-3 py-1 text-xs text-white/90">
-            {mockBriefBullets.length} insights
+            {bullets.length} insights
           </span>
         </div>
       </div>
 
       {/* Bullets */}
       <div className="mt-4 flex flex-col gap-3 overflow-y-auto px-4">
-        {mockBriefBullets.map((bullet, index) => {
+        {bullets.map((bullet, index) => {
           const style = BULLET_STYLES[bullet.type] ?? BULLET_STYLES.openLoop
           const isCommitment = bullet.type === 'commitment'
           const checked = Boolean(bulletChecked[bullet.id])

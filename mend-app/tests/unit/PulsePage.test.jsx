@@ -29,7 +29,21 @@ function renderPulse() {
 
 describe('PulsePage', () => {
   beforeEach(() => {
-    useMendStore.setState({ pulsePatterns: [] })
+    try {
+      localStorage.removeItem('mend-storage')
+    } catch {
+      /* ignore */
+    }
+    useMendStore.setState({
+      pulsePatterns: mockPulsePatterns,
+      allDebriefs: [
+        {
+          id: 1,
+          date: new Date().toISOString(),
+          answers: { emotion: 'calm', belief: 'x', pattern: 'y', commitment: 'z' },
+        },
+      ],
+    })
   })
 
   afterEach(() => {

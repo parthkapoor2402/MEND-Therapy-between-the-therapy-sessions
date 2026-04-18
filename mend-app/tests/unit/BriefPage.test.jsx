@@ -1,8 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { BriefPage } from '../../src/pages/BriefPage.jsx'
 import { mockBriefBullets } from '../../src/data/mockData.js'
+import { useMendStore } from '../../src/store/useMendStore.js'
 
 function renderBrief() {
   return render(
@@ -16,6 +18,15 @@ function renderBrief() {
 }
 
 describe('BriefPage', () => {
+  beforeEach(() => {
+    try {
+      localStorage.removeItem('mend-storage')
+    } catch {
+      /* ignore */
+    }
+    useMendStore.setState({ currentBrief: null })
+  })
+
   it('renders 5 bullet cards from mockBriefBullets', () => {
     renderBrief()
     const articles = screen.getAllByRole('article')

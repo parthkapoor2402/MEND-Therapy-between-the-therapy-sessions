@@ -101,6 +101,7 @@ function formatReminderCopy(sessionDate) {
 export function OnboardingPage() {
   const navigate = useNavigate()
   const setOnboardingComplete = useMendStore((s) => s.setOnboardingComplete)
+  const setNotificationSettings = useMendStore((s) => s.setNotificationSettings)
 
   const [currentScreen, setCurrentScreen] = useState(0)
   const [selectedPlatform, setSelectedPlatform] = useState('YourDost')
@@ -442,7 +443,17 @@ export function OnboardingPage() {
                   type="button"
                   className={primaryBtnClass}
                   aria-label="Continue to finish"
-                  onClick={() => setCurrentScreen(3)}
+                  onClick={() => {
+                    if (
+                      remindersOn &&
+                      typeof window !== 'undefined' &&
+                      'Notification' in window &&
+                      Notification.permission === 'default'
+                    ) {
+                      void Notification.requestPermission()
+                    }
+                    setCurrentScreen(3)
+                  }}
                 >
                   These look good
                 </button>
@@ -480,6 +491,11 @@ export function OnboardingPage() {
                     type="button"
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
+                      setNotificationSettings({
+                        sessionReminders: remindersOn,
+                        preSessionBrief: briefOn,
+                        pulseDigest: pulseOn,
+                      })
                       setOnboardingComplete(true)
                       navigate('/debrief')
                     }}
@@ -512,6 +528,11 @@ export function OnboardingPage() {
                     type="button"
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
+                      setNotificationSettings({
+                        sessionReminders: remindersOn,
+                        preSessionBrief: briefOn,
+                        pulseDigest: pulseOn,
+                      })
                       setOnboardingComplete(true)
                       navigate('/home')
                     }}

@@ -8,6 +8,22 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Runs before React: ?yourdost clears saved Mend state so / always shows YourDOST discovery first. -->
+    <script>
+      ;(function () {
+        try {
+          var p = new URLSearchParams(window.location.search)
+          if (!p.has('yourdost')) return
+          localStorage.removeItem('mend-storage')
+          p.delete('yourdost')
+          var q = p.toString()
+          var path = window.location.pathname + (q ? '?' + q : '') + window.location.hash
+          window.history.replaceState(null, '', path || '/')
+        } catch (e) {
+          /* ignore */
+        }
+      })()
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

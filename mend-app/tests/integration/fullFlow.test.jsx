@@ -1,8 +1,27 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../../src/App.jsx'
-import { mockBriefBullets, mockDebriefEntries } from '../../src/data/mockData.js'
+import { mockBriefBullets, mockDebriefEntries, mockPulsePatterns } from '../../src/data/mockData.js'
+import { useMendStore } from '../../src/store/useMendStore.js'
+
+function resetAppState() {
+  try {
+    localStorage.removeItem('mend-storage')
+  } catch {
+    /* ignore */
+  }
+  useMendStore.setState({
+    onboardingComplete: false,
+    allDebriefs: [],
+    briefGenerated: false,
+    currentBrief: null,
+    pulsePatterns: [],
+    debriefAnswers: {},
+    currentDebriefStep: 0,
+    addedToBriefIds: [],
+  })
+}
 
 function renderAtRoute(route) {
   return render(
@@ -13,6 +32,10 @@ function renderAtRoute(route) {
 }
 
 describe('Mend full flow', () => {
+  beforeEach(() => {
+    resetAppState()
+  })
+
   it('Discovery page loads with YourDost mock and Mend card', () => {
     renderAtRoute('/')
     expect(screen.getByText('YourDOST')).toBeInTheDocument()
@@ -73,6 +96,21 @@ describe('Mend full flow', () => {
   })
 
   it('Pattern pulse renders all 3 cards and regression card', () => {
+    try {
+      localStorage.removeItem('mend-storage')
+    } catch {
+      /* ignore */
+    }
+    useMendStore.setState({
+      allDebriefs: [
+        {
+          id: 1,
+          date: new Date().toISOString(),
+          answers: { emotion: 'tired', belief: 'x', pattern: 'y', commitment: 'z' },
+        },
+      ],
+      pulsePatterns: mockPulsePatterns,
+    })
     renderAtRoute('/pulse')
     expect(screen.getByText('RECURRING PATTERN')).toBeInTheDocument()
     expect(screen.getByText('SHIFT POINT')).toBeInTheDocument()
@@ -81,6 +119,21 @@ describe('Mend full flow', () => {
   })
 
   it('Adding regression to brief shows toast', async () => {
+    try {
+      localStorage.removeItem('mend-storage')
+    } catch {
+      /* ignore */
+    }
+    useMendStore.setState({
+      allDebriefs: [
+        {
+          id: 1,
+          date: new Date().toISOString(),
+          answers: { emotion: 'tired', belief: 'x', pattern: 'y', commitment: 'z' },
+        },
+      ],
+      pulsePatterns: mockPulsePatterns,
+    })
     renderAtRoute('/pulse')
     const addButtons = screen.getAllByText('Add to brief →')
     fireEvent.click(addButtons[2])

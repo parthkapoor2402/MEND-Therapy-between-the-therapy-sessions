@@ -1,10 +1,34 @@
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DebriefPage } from '../../src/pages/DebriefPage.jsx'
+
+vi.mock('../../src/services/geminiService.js', () => ({
+  generateBriefFromDebrief: vi.fn().mockResolvedValue(null),
+}))
 import { mockDebriefEntries } from '../../src/data/mockData.js'
 import { useMendStore } from '../../src/store/useMendStore.js'
+
+const speech = vi.hoisted(() => ({
+  lastOpts: null,
+  flushFinal: (text) => {
+    speech.lastOpts?.onResult(text, true)
+    speech.lastOpts?.onEnd?.()
+  },
+}))
+
+vi.mock('../../src/hooks/useSpeechRecognition.js', () => ({
+  useSpeechRecognition: (opts) => {
+    speech.lastOpts = opts
+    return {
+      startListening: vi.fn(() => true),
+      stopListening: vi.fn(() => {
+        opts.onEnd?.()
+      }),
+    }
+  },
+}))
 
 function renderDebrief(initialEntry = '/debrief') {
   return render(
@@ -19,12 +43,21 @@ function renderDebrief(initialEntry = '/debrief') {
 
 describe('DebriefPage', () => {
   beforeEach(() => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-    useMendStore.setState({ debriefAnswers: {}, briefGenerated: false })
+    try {
+      localStorage.removeItem('mend-storage')
+    } catch {
+      /* ignore */
+    }
+    useMendStore.setState({
+      debriefAnswers: {},
+      briefGenerated: false,
+      allDebriefs: [],
+    })
+    speech.lastOpts = null
   })
 
   afterEach(() => {
-    vi.useRealTimers()
+    vi.clearAllMocks()
   })
 
   it('Step -1 renders headline', () => {
@@ -38,14 +71,14 @@ describe('DebriefPage', () => {
   })
 
   it('Start Debrief advances to step 0', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     renderDebrief()
     await user.click(screen.getByRole('button', { name: /Start debrief/i }))
     expect(screen.getByText(mockDebriefEntries[0].question)).toBeInTheDocument()
   })
 
   it('Step 0 shows first question and tag', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     renderDebrief()
     await user.click(screen.getByRole('button', { name: /Start debrief/i }))
     expect(screen.getByText(mockDebriefEntries[0].tagLabel)).toBeInTheDocument()
@@ -53,7 +86,7 @@ describe('DebriefPage', () => {
   })
 
   it('Progress bar at step 0 is 20% width', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     renderDebrief()
     await user.click(screen.getByRole('button', { name: /Start debrief/i }))
     const bar = screen.getByTestId('debrief-progress-inner')
@@ -61,14 +94,13 @@ describe('DebriefPage', () => {
   })
 
   it('Progress bar at step 4 is 100% width', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     renderDebrief()
     await user.click(screen.getByRole('button', { name: /Start debrief/i }))
     for (let step = 0; step < 4; step += 1) {
-      const ans = mockDebriefEntries[step].answer
       await user.click(screen.getByTestId('debrief-mic'))
       act(() => {
-        vi.advanceTimersByTime(ans.length * 30 + 50)
+        speech.flushFinal(mockDebriefEntries[step].answer)
       })
       await user.click(screen.getByTestId('debrief-next'))
     }
@@ -77,42 +109,40 @@ describe('DebriefPage', () => {
   })
 
   it('Next question disabled when transcript empty', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     renderDebrief()
     await user.click(screen.getByRole('button', { name: /Start debrief/i }))
     expect(screen.getByTestId('debrief-next')).toBeDisabled()
   })
 
   it('After mic tap shows Listening', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     renderDebrief()
     await user.click(screen.getByRole('button', { name: /Start debrief/i }))
     await user.click(screen.getByTestId('debrief-mic'))
     expect(screen.getByText(/Listening/i)).toBeInTheDocument()
   })
 
-  it('After typewriter completes Next is enabled', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+  it('After final transcript Next is enabled', async () => {
+    const user = userEvent.setup()
     renderDebrief()
     await user.click(screen.getByRole('button', { name: /Start debrief/i }))
     await user.click(screen.getByTestId('debrief-mic'))
-    const len = mockDebriefEntries[0].answer.length
     act(() => {
-      vi.advanceTimersByTime(len * 30 + 50)
+      speech.flushFinal(mockDebriefEntries[0].answer)
     })
     expect(screen.getByTestId('debrief-next')).not.toBeDisabled()
   })
 
   it('Step 4 shows Complete Debrief button', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     renderDebrief()
     await user.click(screen.getByRole('button', { name: /Start debrief/i }))
 
     for (let step = 0; step < 4; step += 1) {
-      const ans = mockDebriefEntries[step].answer
       await user.click(screen.getByTestId('debrief-mic'))
       act(() => {
-        vi.advanceTimersByTime(ans.length * 30 + 50)
+        speech.flushFinal(mockDebriefEntries[step].answer)
       })
       await user.click(screen.getByTestId('debrief-next'))
     }
@@ -123,37 +153,39 @@ describe('DebriefPage', () => {
   })
 
   it('Step 5 shows Saved and 5 summary cards', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     renderDebrief()
     await user.click(screen.getByRole('button', { name: /Start debrief/i }))
 
     for (let step = 0; step < 5; step += 1) {
-      const ans = mockDebriefEntries[step].answer
       await user.click(screen.getByTestId('debrief-mic'))
       act(() => {
-        vi.advanceTimersByTime(ans.length * 30 + 50)
+        speech.flushFinal(mockDebriefEntries[step].answer)
       })
       await user.click(screen.getByTestId('debrief-next'))
     }
 
-    expect(screen.getByText('Saved. ✓')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Saved. ✓')).toBeInTheDocument()
+    })
     const cards = screen.getAllByTestId('debrief-summary-card')
     expect(cards).toHaveLength(5)
     expect(within(cards[0]).getByText(mockDebriefEntries[0].answer)).toBeInTheDocument()
   })
 
-  it('setBriefGenerated true on completion', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+  it('briefGenerated true on completion', async () => {
+    const user = userEvent.setup()
     renderDebrief()
     await user.click(screen.getByRole('button', { name: /Start debrief/i }))
     for (let step = 0; step < 5; step += 1) {
-      const ans = mockDebriefEntries[step].answer
       await user.click(screen.getByTestId('debrief-mic'))
       act(() => {
-        vi.advanceTimersByTime(ans.length * 30 + 50)
+        speech.flushFinal(mockDebriefEntries[step].answer)
       })
       await user.click(screen.getByTestId('debrief-next'))
     }
-    expect(useMendStore.getState().briefGenerated).toBe(true)
+    await waitFor(() => {
+      expect(useMendStore.getState().briefGenerated).toBe(true)
+    })
   })
 })

@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { BottomNav } from '../../src/components/ui/BottomNav.jsx'
 import { HomeDashboard } from '../../src/pages/HomeDashboard.jsx'
-import { mockDebriefEntries } from '../../src/data/mockData.js'
 import { useMendStore } from '../../src/store/useMendStore.js'
 
 function ShellWithNav() {
@@ -22,14 +23,31 @@ function renderHome(pathname = '/home') {
         <Route path="/debrief" element={<div>Debrief</div>} />
         <Route path="/brief" element={<div>Brief</div>} />
         <Route path="/pulse" element={<div>Pulse</div>} />
+        <Route path="/memory" element={<div>Memory</div>} />
+        <Route path="/settings" element={<div>Settings</div>} />
       </Routes>
     </MemoryRouter>,
   )
 }
 
+function resetHomeState() {
+  try {
+    localStorage.removeItem('mend-storage')
+  } catch {
+    /* ignore */
+  }
+  useMendStore.setState({
+    briefGenerated: false,
+    allDebriefs: [],
+    pulsePatterns: [],
+    currentBrief: null,
+    onboardingComplete: true,
+  })
+}
+
 describe('HomeDashboard', () => {
   beforeEach(() => {
-    useMendStore.setState({ briefGenerated: false })
+    resetHomeState()
   })
 
   it('Greeting shows "Good evening, Priya"', () => {
@@ -43,32 +61,59 @@ describe('HomeDashboard', () => {
     expect(screen.getByText('Thursday, April 24 · 6:00 PM')).toBeInTheDocument()
   })
 
-  it('When briefGenerated is false: debrief card with Start Debrief button', () => {
-    useMendStore.setState({ briefGenerated: false })
+  it('Session card shows next session number', () => {
+    renderHome()
+    expect(screen.getByText('Session 1')).toBeInTheDocument()
+  })
+
+  it('When not debriefed today: debrief card with Start Debrief button', () => {
     renderHome()
     expect(screen.getByText('Debrief your last session')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Start debrief/i })).toHaveTextContent('Start Debrief →')
   })
 
-  it('When briefGenerated is true: session debriefed card', () => {
-    useMendStore.setState({ briefGenerated: true })
+  it('When debriefed today: session debriefed card', () => {
+    const today = new Date().toISOString()
+    useMendStore.setState({
+      allDebriefs: [
+        {
+          id: 1,
+          date: today,
+          answers: { emotion: 'Calm' },
+        },
+      ],
+      briefGenerated: true,
+    })
     renderHome()
     expect(screen.getByText('Session debriefed ✓')).toBeInTheDocument()
   })
 
-  it('Memory Jar renders 3 cards', () => {
+  it('Memory Jar shows 3 placeholders when no debriefs', () => {
     renderHome()
-    const cards = screen.getAllByRole('article')
-    expect(cards).toHaveLength(3)
+    expect(screen.getAllByText('Your captures will appear here')).toHaveLength(3)
   })
 
-  it('First memory card shows first mockDebriefEntries answer', () => {
+  it('Memory Jar shows real capture when debriefs exist', () => {
+    useMendStore.setState({
+      allDebriefs: [
+        {
+          id: 1,
+          date: new Date('2026-01-15').toISOString(),
+          answers: { emotion: 'I felt lighter after naming the fear.' },
+        },
+      ],
+    })
     renderHome()
-    const first = screen.getAllByRole('article')[0]
-    expect(first).toHaveTextContent(mockDebriefEntries[0].answer)
+    expect(screen.getByText(/I felt lighter after naming the fear/)).toBeInTheDocument()
   })
 
-  it('Pulse teaser shows pattern count copy', () => {
+  it('Pulse teaser uses pulsePatterns length when set', () => {
+    useMendStore.setState({ pulsePatterns: [{ id: 1 }, { id: 2 }] })
+    renderHome()
+    expect(screen.getByText('2 patterns spotted this week')).toBeInTheDocument()
+  })
+
+  it('Pulse teaser falls back to 3 when pulsePatterns empty', () => {
     renderHome()
     expect(screen.getByText('3 patterns spotted this week')).toBeInTheDocument()
   })
@@ -84,5 +129,19 @@ describe('HomeDashboard', () => {
   it('BottomNav home tab is active on /home', () => {
     renderHome('/home')
     expect(screen.getByText('Home')).toBeInTheDocument()
+  })
+
+  it('See all navigates to memory', async () => {
+    const user = userEvent.setup()
+    renderHome()
+    await user.click(screen.getByRole('button', { name: /See all memories/i }))
+    expect(screen.getByText('Memory')).toBeInTheDocument()
+  })
+
+  it('Settings bell navigates to settings', async () => {
+    const user = userEvent.setup()
+    renderHome()
+    await user.click(screen.getByRole('button', { name: /Settings/i }))
+    expect(screen.getByText('Settings')).toBeInTheDocument()
   })
 })

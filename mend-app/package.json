@@ -5,12 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:yourdost": "vite --open /?yourdost",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "demo:video": "playwright test e2e/demo-full-journey.spec.ts",
+    "demo:video:install": "playwright install chromium"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "autoprefixer": "^10.5.0",
     "framer-motion": "^12.38.0",
     "postcss": "^8.5.10",
@@ -34,6 +38,7 @@
     "globals": "^17.4.0",
     "jsdom": "^29.0.2",
     "vite": "^8.0.4",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.4",
+    "@playwright/test": "^1.55.0"
   }
 }
