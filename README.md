@@ -8,7 +8,7 @@ This repository is submitted for **Product Arena 3.0**. It reflects how I think 
 
 ## Live app
 
-**Production (Vercel):** https://mendnew-deploy-f0z4bltxj-parthkapoor2402s-projects.vercel.app/
+**Production (Vercel):** https://mendbetweentherapy-sessions.vercel.app/onboarding
 
 Pushing to **`main`** updates this deployment when the project is connected to GitHub (Vercel production branch).
 
