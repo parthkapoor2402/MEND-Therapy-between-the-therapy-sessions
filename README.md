@@ -8,8 +8,7 @@ This repository is submitted for **Product Arena 3.0**. It reflects how I think 
 
 ## Live app
 
-**Production (Vercel):** https://mendbetweentherapy-sessions.vercel.app/onboarding
-
+**Production (Vercel):** https://mendbetweentherapy-sessions-p83ujr55l-parthkapoor2402s-projects.vercel.app/
 Pushing to **`main`** updates this deployment when the project is connected to GitHub (Vercel production branch).
 
 ## How I think about this problem (PM lens)
