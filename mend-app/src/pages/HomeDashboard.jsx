@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { useMendStore } from '../store/useMendStore.js'
 import { Tag } from '../components/ui/Tag.jsx'
 import PageTransition from '../components/ui/PageTransition.jsx'
+import MomentPaywall from '../components/ui/MomentPaywall.jsx'
+import { formatRelativeTime } from '../utils/formatRelativeTime.js'
 
 function BellIcon() {
   return (
@@ -89,8 +91,13 @@ export function HomeDashboard() {
   const profile = useMendStore((s) => s.profile)
   const pulsePatterns = useMendStore((s) => s.pulsePatterns)
   const notificationSettings = useMendStore((s) => s.notificationSettings)
+  const isPro = useMendStore((s) => s.isPro)
+  const momentUsed = useMendStore((s) => s.momentUsed)
+  const moments = useMendStore((s) => s.moments)
+  const unlockPro = useMendStore((s) => s.unlockPro)
 
   const [notifyBannerDismissed, setNotifyBannerDismissed] = useState(false)
+  const [paywallOpen, setPaywallOpen] = useState(false)
   const wantsBrowserNotifications =
     notificationSettings.sessionReminders ||
     notificationSettings.preSessionBrief ||
@@ -212,39 +219,7 @@ export function HomeDashboard() {
           </div>
         </div>
 
-        {showBrowserNotifyBanner ? (
-          <div className="mt-4 px-4">
-            <div className="flex flex-col gap-2 rounded-2xl border border-mend-ydTeal/30 bg-mend-ydTealLight/50 px-4 py-3">
-              <p className="text-sm font-semibold text-mend-textPrimary">Allow session nudges?</p>
-              <p className="text-xs leading-relaxed text-mend-textMuted">
-                Your browser needs permission for reminders and digests you turned on in onboarding. You can change this
-                anytime in Settings.
-              </p>
-              <div className="flex flex-wrap gap-2 pt-1">
-                <button
-                  type="button"
-                  className="min-h-[40px] rounded-full bg-mend-green px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-mend-green/90"
-                  aria-label="Allow browser notifications for session reminders"
-                  onClick={() => {
-                    void Notification.requestPermission()
-                    setNotifyBannerDismissed(true)
-                  }}
-                >
-                  Allow notifications
-                </button>
-                <button
-                  type="button"
-                  className="min-h-[40px] rounded-full border border-mend-border bg-white px-4 py-2 text-sm font-medium text-mend-textMuted transition-colors hover:bg-gray-50"
-                  onClick={() => setNotifyBannerDismissed(true)}
-                >
-                  Not now
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {/* Section 3 — Today */}
+        {/* Section 3 — Today (debrief stays above Mend Moment) */}
         <div className="mt-6 px-4">
           <p className="mb-3 text-xs font-semibold tracking-widest text-mend-textMuted">TODAY</p>
           {debriefedToday ? (
@@ -290,8 +265,146 @@ export function HomeDashboard() {
           )}
         </div>
 
-        {/* Section 4 — Memory jar */}
+        {showBrowserNotifyBanner ? (
+          <div className="mt-4 px-4">
+            <div className="flex flex-col gap-2 rounded-2xl border border-mend-ydTeal/30 bg-mend-ydTealLight/50 px-4 py-3">
+              <p className="text-sm font-semibold text-mend-textPrimary">Allow session nudges?</p>
+              <p className="text-xs leading-relaxed text-mend-textMuted">
+                Your browser needs permission for reminders and digests you turned on in onboarding. You can change this
+                anytime in Settings.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <button
+                  type="button"
+                  className="min-h-[40px] rounded-full bg-mend-green px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-mend-green/90"
+                  aria-label="Allow browser notifications for session reminders"
+                  onClick={() => {
+                    void Notification.requestPermission()
+                    setNotifyBannerDismissed(true)
+                  }}
+                >
+                  Allow notifications
+                </button>
+                <button
+                  type="button"
+                  className="min-h-[40px] rounded-full border border-mend-border bg-white px-4 py-2 text-sm font-medium text-mend-textMuted transition-colors hover:bg-gray-50"
+                  onClick={() => setNotifyBannerDismissed(true)}
+                >
+                  Not now
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Mend Moments strip */}
+        {moments.length > 0 ? (
+          <div className="mt-6 px-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-base" aria-hidden>
+                  ⚡
+                </span>
+                <span className="text-xs font-semibold tracking-widest text-mend-textMuted">
+                  BETWEEN SESSIONS
+                </span>
+              </div>
+              {moments.length > 1 ? (
+                <button
+                  type="button"
+                  className="text-xs text-mend-blue transition-opacity hover:opacity-80"
+                  onClick={() => navigate('/moments')}
+                >
+                  See all →
+                </button>
+              ) : null}
+            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border border-white/10 bg-[#1A2420] p-4"
+            >
+              <div className="flex items-center">
+                <span className="text-sm text-mend-green" aria-hidden>
+                  ⚡
+                </span>
+                <span className="ml-2 text-xs text-white/40">
+                  {formatRelativeTime(moments[0].timestamp)}
+                </span>
+              </div>
+              <p className="mt-2 line-clamp-2 text-sm italic leading-relaxed text-white/80">
+                &quot;{moments[0].keyCapture}&quot;
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span>{moments[0].tagEmoji}</span>
+                <span className="text-xs font-medium text-white/50">{moments[0].emotionTag}</span>
+                {moments[0].patternDetected && moments[0].patternLabel ? (
+                  <>
+                    <span className="text-white/30">·</span>
+                    <span className="text-xs text-mend-green">🔁 {moments[0].patternLabel}</span>
+                  </>
+                ) : null}
+                <span className="ml-auto text-xs text-white/30">In next brief ✓</span>
+              </div>
+            </motion.div>
+          </div>
+        ) : null}
+
+        {/* Mend Moment (compact) + Memory jar — same band so layout stays aligned */}
         <div className="mt-6 px-4">
+          <div className="mb-5 rounded-2xl border-2 border-white bg-black p-4 text-white shadow-[6px_6px_0_0_rgba(255,255,255,0.35)] ring-1 ring-white/15">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch sm:justify-between sm:gap-5">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/50">Between sessions</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2.5">
+                  <p className="text-lg font-black uppercase leading-none tracking-tight text-white">Mend Moment</p>
+                  <span className="border-2 border-white px-2 py-0.5 text-[11px] font-black uppercase tracking-[0.18em] text-white">
+                    PRO
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {!momentUsed ? (
+                    <span className="border border-white/50 bg-white/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                      First one free
+                    </span>
+                  ) : isPro ? (
+                    <span className="border border-white/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/80">
+                      Included
+                    </span>
+                  ) : (
+                    <span className="border border-white/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/70">
+                      Locked
+                    </span>
+                  )}
+                </div>
+                <p className="mt-3 text-xs font-medium leading-relaxed text-white/75">
+                  {!momentUsed
+                    ? 'Your first Mend Moment is free — a quick capture between sessions can show up in your next brief.'
+                    : isPro
+                      ? "Jot something between sessions; we'll weave it into your care journey."
+                      : "You've used your free capture. Unlock PRO for unlimited Mend Moments."}
+                </p>
+              </div>
+              <motion.button
+                type="button"
+                data-testid="moment-fab"
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex w-full shrink-0 items-center justify-center gap-1.5 self-center rounded-none border-2 border-white bg-white px-5 py-3 text-xs font-black uppercase tracking-[0.12em] text-black transition-colors hover:bg-white/90 active:bg-white/80 sm:w-auto sm:min-w-[9rem] sm:self-center"
+                aria-label="Capture Mend Moment"
+                onClick={() => {
+                  if (!isPro && momentUsed) {
+                    setPaywallOpen(true)
+                  } else {
+                    navigate('/moment')
+                  }
+                }}
+              >
+                <span aria-hidden>⚡</span>
+                <span>{!isPro && momentUsed ? 'Unlock' : 'Capture'}</span>
+              </motion.button>
+            </div>
+          </div>
+
           <div className="flex items-center">
             <p className="text-xs font-semibold tracking-widest text-mend-textMuted">YOUR MEMORY JAR</p>
             <button
@@ -355,6 +468,17 @@ export function HomeDashboard() {
           </motion.button>
         </div>
       </div>
+
+      <MomentPaywall
+        isOpen={paywallOpen}
+        firstMoment={moments[0] ?? null}
+        onClose={() => setPaywallOpen(false)}
+        onUnlock={() => {
+          unlockPro()
+          setPaywallOpen(false)
+          navigate('/moment')
+        }}
+      />
     </PageTransition>
   )
 }

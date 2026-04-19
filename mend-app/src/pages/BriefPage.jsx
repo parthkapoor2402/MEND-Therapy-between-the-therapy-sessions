@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { mockBriefBullets, mockUser } from '../data/mockData.js'
 import { useMendStore } from '../store/useMendStore.js'
 import PageTransition from '../components/ui/PageTransition.jsx'
+import { formatRelativeTime } from '../utils/formatRelativeTime.js'
 
 function sessionPillText() {
   const d = mockUser.nextSessionDate.replace(/^.*,\s*/, '')
@@ -135,7 +136,7 @@ function LockIconMuted() {
 
 export function BriefPage() {
   const navigate = useNavigate()
-  const { currentBrief } = useMendStore()
+  const { currentBrief, moments } = useMendStore()
   const bullets = currentBrief || mockBriefBullets
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [bulletChecked, setBulletChecked] = useState({})
@@ -169,6 +170,49 @@ export function BriefPage() {
           <PaperPlaneIcon />
         </button>
       </header>
+
+      {moments.length > 0 ? (
+        <div className="px-4 pt-4">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="text-base text-mend-green" aria-hidden>
+              ⚡
+            </span>
+            <span className="text-xs font-semibold tracking-widest text-mend-textMuted">
+              BETWEEN SESSIONS
+            </span>
+          </div>
+          {moments.slice(0, 3).map((moment, index) => (
+            <motion.article
+              key={moment.id}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="mb-3 rounded-2xl border border-white/10 bg-[#1A2420] p-4 pl-3 [border-left-width:4px] [border-left-color:#4A7C59]"
+            >
+              <div className="flex items-center">
+                <span className="text-sm text-mend-green" aria-hidden>
+                  ⚡
+                </span>
+                <span className="ml-2 text-xs text-white/40">{formatRelativeTime(moment.timestamp)}</span>
+              </div>
+              <div className="mt-1">
+                <span>{moment.tagEmoji}</span>
+                <span className="ml-1 text-sm font-semibold text-white">{moment.momentLabel}</span>
+              </div>
+              <p className="mt-2 text-sm italic leading-relaxed text-white/70">&quot;{moment.keyCapture}&quot;</p>
+              {moment.patternDetected && moment.patternLabel ? (
+                <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-mend-green/20 px-3 py-1 text-xs font-medium text-mend-green">
+                  <span>🔁</span>
+                  {moment.patternLabel}
+                </div>
+              ) : null}
+            </motion.article>
+          ))}
+          <div className="mb-2 mt-4 border-t border-mend-border py-2 text-center">
+            <span className="text-xs tracking-widest text-mend-textMuted">YOUR SESSION BRIEF BELOW ↓</span>
+          </div>
+        </div>
+      ) : null}
 
       {/* Header gradient */}
       <div

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -25,6 +25,8 @@ function renderHome(pathname = '/home') {
         <Route path="/pulse" element={<div>Pulse</div>} />
         <Route path="/memory" element={<div>Memory</div>} />
         <Route path="/settings" element={<div>Settings</div>} />
+        <Route path="/moment" element={<div>Moment capture</div>} />
+        <Route path="/moments" element={<div>All moments</div>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -42,6 +44,9 @@ function resetHomeState() {
     pulsePatterns: [],
     currentBrief: null,
     onboardingComplete: true,
+    isPro: false,
+    momentUsed: false,
+    moments: [],
   })
 }
 
@@ -143,5 +148,85 @@ describe('HomeDashboard', () => {
     renderHome()
     await user.click(screen.getByRole('button', { name: /Settings/i }))
     expect(screen.getByText('Settings')).toBeInTheDocument()
+  })
+
+  it('FAB renders with ⚡', () => {
+    renderHome()
+    const fab = screen.getByTestId('moment-fab')
+    expect(fab).toHaveTextContent('⚡')
+  })
+
+  it('Label pill shows when moments.length === 0', async () => {
+    renderHome()
+    await waitFor(
+      () => {
+        expect(screen.getByText('Mend Moment')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  it('FAB onClick navigates to /moment when !momentUsed', async () => {
+    const user = userEvent.setup()
+    renderHome()
+    await user.click(screen.getByTestId('moment-fab'))
+    expect(screen.getByText('Moment capture')).toBeInTheDocument()
+  })
+
+  it('FAB onClick opens paywall when momentUsed && !isPro', async () => {
+    const user = userEvent.setup()
+    useMendStore.setState({ momentUsed: true, isPro: false, moments: [{ id: 1, keyCapture: 'x' }] })
+    renderHome()
+    await user.click(screen.getByTestId('moment-fab'))
+    expect(screen.getByText("Real life doesn't wait")).toBeInTheDocument()
+  })
+
+  it('FAB onClick navigates to /moment when isPro true', async () => {
+    const user = userEvent.setup()
+    useMendStore.setState({ momentUsed: true, isPro: true, moments: [{ id: 1 }] })
+    renderHome()
+    await user.click(screen.getByTestId('moment-fab'))
+    expect(screen.getByText('Moment capture')).toBeInTheDocument()
+  })
+
+  it('Moments strip hidden when moments.length === 0', () => {
+    renderHome()
+    expect(screen.queryByText('BETWEEN SESSIONS')).not.toBeInTheDocument()
+  })
+
+  it('Moments strip shows when moments.length > 0', () => {
+    useMendStore.setState({
+      moments: [
+        {
+          id: 1,
+          keyCapture: 'Hello from my heart',
+          emotionTag: 'emotion',
+          tagEmoji: '💛',
+          patternDetected: false,
+          patternLabel: null,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    })
+    renderHome()
+    expect(screen.getByText('BETWEEN SESSIONS')).toBeInTheDocument()
+    expect(screen.getByText(/Hello from my heart/)).toBeInTheDocument()
+  })
+
+  it('"In next brief ✓" label shows on moment card', () => {
+    useMendStore.setState({
+      moments: [
+        {
+          id: 1,
+          keyCapture: 'Test',
+          emotionTag: 'joy',
+          tagEmoji: '😊',
+          patternDetected: false,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    })
+    renderHome()
+    expect(screen.getByText(/In next brief/)).toBeInTheDocument()
   })
 })

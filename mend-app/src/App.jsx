@@ -8,6 +8,8 @@ import BriefPage from './pages/BriefPage.jsx'
 import PulsePage from './pages/PulsePage.jsx'
 import MemoryPage from './pages/MemoryPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
+import MomentCapturePage from './pages/MomentCapturePage.jsx'
+import MomentsPage from './pages/MomentsPage.jsx'
 import BottomNav from './components/ui/BottomNav.jsx'
 import ScrollToTop from './components/ui/ScrollToTop.jsx'
 
@@ -37,6 +39,8 @@ export default function App() {
               <Route path="/pulse" element={<PulsePage />} />
               <Route path="/memory" element={<MemoryPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/moment" element={<MomentCapturePage />} />
+              <Route path="/moments" element={<MomentsPage />} />
             </Routes>
           </AnimatePresence>
         </div>

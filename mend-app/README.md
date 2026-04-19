@@ -18,10 +18,12 @@ npx vitest run       # CI-style single run
 | ---- | ------ |
 | `/` | Discovery (YourDOST mock + Mend card) |
 | `/onboarding` | Consent & setup |
-| `/home` | Dashboard |
+| `/home` | Dashboard (debrief first; **Mend Moment PRO** card above Memory Jar) |
 | `/debrief` | 5-prompt debrief |
 | `/brief` | Pre-session brief |
 | `/pulse` | Weekly pattern pulse |
+| `/moment` | Mend Moment capture (first free, then PRO) |
+| `/moments` | List of Mend Moments |
 
 ## Deploy
 

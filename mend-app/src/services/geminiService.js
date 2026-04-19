@@ -109,3 +109,67 @@ For type "shift" also include:
     return null
   }
 }
+
+function momentTagFallback(rawText) {
+  return {
+    keyCapture: rawText.slice(0, 120),
+    emotionTag: 'emotion',
+    tagEmoji: '💛',
+    patternDetected: false,
+    patternLabel: null,
+    momentLabel: 'Something came up',
+  }
+}
+
+export async function tagMoment(rawText) {
+  const safe = typeof rawText === 'string' ? rawText : ''
+  if (!model) {
+    return momentTagFallback(safe)
+  }
+
+  const prompt = `
+You are Mend — a compassionate AI memory assistant for therapy patients.
+A user just captured a raw, unfiltered emotional moment between their 
+therapy sessions. It may be messy, incomplete, or mid-thought. That 
+is okay.
+
+Their raw capture: "${safe.replace(/"/g, '\\"')}"
+
+Your job:
+1. Extract the single most emotionally important sentence or phrase 
+   from what they said — their own exact words, not a summary
+2. Identify the primary emotional tag (choose exactly one):
+   emotion | belief | pattern | trigger | grief | anger | fear | joy | relief
+3. Detect if a known therapy pattern is present — recurring belief,
+   avoidance, self-criticism, people-pleasing, catastrophising
+   If yes: patternDetected = true, patternLabel = short label
+   If no: patternDetected = false, patternLabel = null
+4. Write one warm, non-clinical brief label (max 8 words) that 
+   names what this moment is about — using their words where possible
+
+Rules:
+- Never interpret, diagnose, or advise
+- Never add clinical language
+- Never summarise — only extract their exact words
+- Be warm and human
+
+Return ONLY this JSON (no markdown, no extra text):
+{
+  "keyCapture": "their exact most important phrase",
+  "emotionTag": "one word emotion tag",
+  "tagEmoji": "one relevant emoji",
+  "patternDetected": true or false,
+  "patternLabel": "short label or null",
+  "momentLabel": "short warm label max 8 words"
+}
+`
+  try {
+    const result = await model.generateContent(prompt)
+    let text = result.response.text().trim()
+    text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    return JSON.parse(text)
+  } catch (error) {
+    console.error('Moment tagging failed:', error)
+    return momentTagFallback(safe)
+  }
+}

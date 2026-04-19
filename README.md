@@ -10,6 +10,8 @@ This repository is submitted for **Product Arena 3.0**. It reflects how I think 
 
 **Production (Vercel):** https://mendnew-deploy-f0z4bltxj-parthkapoor2402s-projects.vercel.app/
 
+Pushing to **`main`** updates this deployment when the project is connected to GitHub (Vercel production branch).
+
 ## How I think about this problem (PM lens)
 
 ### Market gap: the “Wednesday problem”
@@ -49,7 +51,8 @@ Mend sits **next to** the therapy platform the user already uses (here mocked as
 | ----- | -------------- | -------- |
 | **Discovery** (`/`) | User sees their familiar app surface; Mend appears as a **recommended card** with clear value and “Try free →”. | Meet users **in context**; reduce cold-start abstraction. |
 | **Onboarding** (`/onboarding`) | Four steps: promise, setup, **controls**, therapy context. | Build **trust before data**; set expectations on privacy and control. |
-| **Home** (`/home`) | Session card, debrief CTA, memory jar, pulse teaser. | **Single hub** that routes to each feature with obvious next actions. |
+| **Home** (`/home`) | Next session, **TODAY** debrief first, optional nudges, **Mend Moment PRO** card (above Memory Jar), memory jar, pulse teaser. | **Single hub**; debrief stays primary; **Mend Moment** is a compact between-session capture entry. |
+| **Mend Moment** (`/moment`, `/moments`) | Short **between-session capture** with tagging; first capture **free**, then **PRO** unlock for more; paywall when needed. | Captures **salient moments** outside the formal debrief without crowding the main CTA. |
 | **Debrief** (`/debrief`) | Five guided prompts, voice-first with optional typing. | **Capture while salient**; structure raw experience into retrievable memory. |
 | **Brief** (`/brief`) | Five bullets summarizing themes for **next session**; share affordance. | **Close the loop** into the next clinical conversation. |
 | **Pulse** (`/pulse`) | Weekly digest: recurring pattern, shift point, **regression alert**; “Add to brief”. | **Week-level intelligence**; nudge when themes recur. |
@@ -57,7 +60,7 @@ Mend sits **next to** the therapy platform the user already uses (here mocked as
 **End-to-end flow (one sentence):**  
 Discover Mend → consent and configure → land on home → **debrief** after a session → review **brief** before the next one → scan **pulse** on Sunday → optionally push insights into the next brief—**repeat each cycle**.
 
-## The three features (and why they matter)
+## Core features (and why they matter)
 
 ### 1. Guided debrief (Feature 1)
 
@@ -76,6 +79,14 @@ Discover Mend → consent and configure → land on home → **debrief** after a
 **What it is:** Three insight cards—**recurring pattern**, **shift point**, and **regression detected** (before/after quotes)—plus **add to brief** and confirmation toast.
 
 **Impact:** Surfaces **cross-session structure** and **early warning** when Week-1 language reappears in new words—supporting **self-awareness** and **timely therapist collaboration**.
+
+### 4. Mend Moment (PRO)
+
+**What it is:** A **fast between-session capture** for thoughts that surface mid-week—not a full debrief. Users open **Mend Moment** from the home screen (a high-contrast **black / white “PRO”** card placed **above Memory Jar** so layout stays aligned). The **first Mend Moment is free**; after that, **PRO** unlocks unlimited captures (paywall when applicable). Captures can surface in the **between-sessions** strip on Home and tie into the broader Mend loop.
+
+**Routes:** `/moment` (capture flow), `/moments` (list when more than one exists).
+
+**Impact:** Extends Mend into **micro-capture** without competing with the debrief—**explicit pricing** (first free, then PRO) keeps the business model legible in the UI.
 
 ## The correct product loop (retention & value)
 

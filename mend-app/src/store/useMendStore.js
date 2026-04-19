@@ -26,6 +26,9 @@ const freshAppSlice = () => ({
   currentBrief: null,
   pulsePatterns: [],
   addedToBriefIds: [],
+  isPro: false,
+  momentUsed: false,
+  moments: [],
   profile: { ...defaultProfile },
   notificationSettings: { ...defaultNotificationSettings },
 })
@@ -70,6 +73,16 @@ export const useMendStore = create(
         set((state) => ({
           profile: { ...state.profile, ...partial },
         })),
+      unlockPro: () => set({ isPro: true }),
+      addMoment: (moment) =>
+        set((state) => ({
+          moments: [moment, ...state.moments],
+          momentUsed: true,
+        })),
+      deleteMoment: (id) =>
+        set((state) => ({
+          moments: state.moments.filter((m) => m.id !== id),
+        })),
     }),
     {
       name: 'mend-storage',
@@ -88,6 +101,9 @@ export const useMendStore = create(
         currentBrief: state.currentBrief,
         pulsePatterns: state.pulsePatterns,
         briefGenerated: state.briefGenerated,
+        isPro: state.isPro,
+        momentUsed: state.momentUsed,
+        moments: state.moments,
         profile: state.profile,
         notificationSettings: state.notificationSettings,
       }),

@@ -20,6 +20,9 @@ function resetAppState() {
     debriefAnswers: {},
     currentDebriefStep: 0,
     addedToBriefIds: [],
+    isPro: false,
+    momentUsed: false,
+    moments: [],
   })
 }
 
