@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../src/App.jsx'
@@ -24,7 +25,8 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: /YourDOST/i })).toBeInTheDocument()
   })
 
-  it('still shows YourDOST at / when onboarding is complete (Mend opens from card)', () => {
+  it('Mend card routes through onboarding even when onboarding is complete', async () => {
+    const user = userEvent.setup()
     useMendStore.setState({ onboardingComplete: true })
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -32,7 +34,9 @@ describe('App', () => {
       </MemoryRouter>,
     )
     expect(screen.getByRole('heading', { name: /YourDOST/i })).toBeInTheDocument()
-    expect(screen.queryByText(/Good evening, Priya/)).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Open Mend dashboard/i })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Open Mend/i }))
+    await waitFor(() => {
+      expect(screen.getByText('Only listens when you ask it to.')).toBeInTheDocument()
+    })
   })
 })

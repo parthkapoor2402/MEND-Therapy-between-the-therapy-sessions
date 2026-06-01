@@ -25,7 +25,7 @@ export function MendRecommendedCard() {
   const onboardingComplete = useMendStore((s) => s.onboardingComplete)
 
   const goToMend = () => {
-    navigate(onboardingComplete ? '/home' : '/onboarding')
+    navigate('/onboarding')
   }
 
   return (
@@ -82,7 +82,7 @@ export function MendRecommendedCard() {
             <span className="text-xs text-mend-textMuted">🔒 Opt-in only</span>
             <motion.button
               type="button"
-              aria-label={onboardingComplete ? 'Open Mend dashboard' : 'Try Mend free, go to onboarding'}
+              aria-label="Open Mend — review privacy and setup"
               className="rounded-full bg-mend-green px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mend-green/90 active:bg-mend-green/80"
               whileTap={{ scale: 0.97 }}
               onClick={goToMend}

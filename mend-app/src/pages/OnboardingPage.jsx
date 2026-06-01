@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ProgressDots } from '../components/ProgressDots.jsx'
@@ -110,6 +110,17 @@ export function OnboardingPage() {
   const [remindersOn, setRemindersOn] = useState(true)
   const [briefOn, setBriefOn] = useState(true)
   const [pulseOn, setPulseOn] = useState(true)
+
+  /** Always start at the privacy consent when entering from YourDOST discovery. */
+  useEffect(() => {
+    setCurrentScreen(0)
+    setSelectedPlatform('YourDost')
+    setSessionDate('2026-04-24')
+    setSelectedTime('Evening')
+    setRemindersOn(true)
+    setBriefOn(true)
+    setPulseOn(true)
+  }, [])
 
   const firstName = mockUser.name.split(' ')[0]
   const allSetupFieldsFilled = Boolean(selectedPlatform && sessionDate && selectedTime)

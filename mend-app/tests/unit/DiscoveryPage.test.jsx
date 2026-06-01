@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { DiscoveryPage } from '../../src/pages/DiscoveryPage.jsx'
+import { useMendStore } from '../../src/store/useMendStore.js'
 
 function renderDiscovery(initialEntry = '/') {
   return render(
@@ -16,6 +18,15 @@ function renderDiscovery(initialEntry = '/') {
 }
 
 describe('DiscoveryPage', () => {
+  beforeEach(() => {
+    try {
+      localStorage.removeItem('mend-storage')
+    } catch {
+      /* ignore */
+    }
+    useMendStore.setState({ onboardingComplete: false })
+  })
+
   it('YourdostHomeScreen renders YourDOST header text', () => {
     renderDiscovery()
     expect(screen.getByRole('heading', { name: /YourDOST/i })).toBeInTheDocument()
@@ -60,10 +71,20 @@ describe('DiscoveryPage', () => {
     const user = userEvent.setup()
     renderDiscovery('/home')
 
-    const cta = screen.getByRole('button', { name: /Try Mend free/i })
+    const cta = screen.getByRole('button', { name: /Open Mend/i })
     expect(cta).toHaveTextContent('Try free →')
 
     await user.click(cta)
+
+    expect(screen.getByTestId('onboarding-route')).toBeInTheDocument()
+  })
+
+  it('Mend card navigates to onboarding even when onboarding is already complete', async () => {
+    useMendStore.setState({ onboardingComplete: true })
+    const user = userEvent.setup()
+    renderDiscovery('/')
+
+    await user.click(screen.getByRole('button', { name: /Open Mend/i }))
 
     expect(screen.getByTestId('onboarding-route')).toBeInTheDocument()
   })
