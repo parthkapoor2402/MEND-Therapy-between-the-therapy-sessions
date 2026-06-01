@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -187,5 +187,28 @@ describe('DebriefPage', () => {
     await waitFor(() => {
       expect(useMendStore.getState().briefGenerated).toBe(true)
     })
+  })
+
+  it('shows mic and text input on every question', async () => {
+    const user = userEvent.setup()
+    renderDebrief()
+    await user.click(screen.getByRole('button', { name: /Start debrief/i }))
+
+    for (let step = 0; step < 5; step += 1) {
+      expect(screen.getByTestId('debrief-mic')).toBeInTheDocument()
+      const textbox = screen.getByRole('textbox', { name: /Type your answer/i })
+      expect(textbox).toBeInTheDocument()
+      expect(screen.getByText(/Tap to speak or type below/i)).toBeInTheDocument()
+
+      fireEvent.change(textbox, { target: { value: mockDebriefEntries[step].answer } })
+      expect(screen.getByTestId('debrief-next')).not.toBeDisabled()
+
+      if (step < 4) {
+        await user.click(screen.getByTestId('debrief-next'))
+        await waitFor(() => {
+          expect(screen.getByText(mockDebriefEntries[step + 1].question)).toBeInTheDocument()
+        })
+      }
+    }
   })
 })

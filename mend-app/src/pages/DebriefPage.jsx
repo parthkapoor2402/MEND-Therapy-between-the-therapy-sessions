@@ -80,9 +80,8 @@ export function DebriefPage() {
   const [interimTranscript, setInterimTranscript] = useState('')
   const [finalTranscript, setFinalTranscript] = useState('')
   const [answers, setAnswers] = useState({})
-  /** How each prompt was last saved — restores text vs voice UI when revisiting a question. */
+  /** How each prompt was last saved — voice vs text (for summary / analytics). */
   const [answerSource, setAnswerSource] = useState({})
-  const [showTextFallback, setShowTextFallback] = useState(false)
   const [textInput, setTextInput] = useState('')
 
   const entryPromptRef = useRef(null)
@@ -105,6 +104,7 @@ export function DebriefPage() {
       const key = entryPromptRef.current
       const trimmed = transcript.trim()
       if (key && trimmed) {
+        setTextInput(trimmed)
         setAnswers((prev) => {
           const next = { ...prev, [key]: trimmed }
           answersRef.current = next
@@ -140,28 +140,15 @@ export function DebriefPage() {
     const key = entry?.prompt
     if (!key) return
     const saved = answers[key] ?? ''
-    const source = answerSource[key]
-    if (saved) {
-      if (source === 'text') {
-        setShowTextFallback(true)
-        setTextInput(saved)
-        setFinalTranscript('')
-      } else {
-        setShowTextFallback(false)
-        setFinalTranscript(saved)
-        setTextInput('')
-      }
-    } else {
-      setShowTextFallback(false)
-      setFinalTranscript('')
-      setTextInput('')
-    }
+    setTextInput(saved)
+    setFinalTranscript(saved)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-hydrate when step changes; answers read from latest render
   }, [currentStep])
 
   const handleTextInputChange = (e) => {
     const v = e.target.value
     setTextInput(v)
+    setFinalTranscript(v)
     if (!entry) return
     const k = entry.prompt
     setAnswers((prev) => {
@@ -189,7 +176,6 @@ export function DebriefPage() {
   }
 
   const handleMicToggle = () => {
-    if (showTextFallback) return
     if (isRecording) {
       stopListening()
       const promptKey = entry?.prompt
@@ -197,6 +183,7 @@ export function DebriefPage() {
         setFinalTranscript((existingFinal) => {
           const merged = (existingFinal?.trim() || prevInterim?.trim() || '').trim()
           if (promptKey && merged) {
+            setTextInput(merged)
             setAnswers((prev) => {
               const next = { ...prev, [promptKey]: merged }
               answersRef.current = next
@@ -249,16 +236,13 @@ export function DebriefPage() {
     }
     const key = entry.prompt
     const trimmed = currentAnswer.trim()
-    const source = showTextFallback ? 'text' : 'voice'
     /** Always merge from latest ref so questions 2–5 never drop earlier prompts. */
     const newAnswers = { ...answersRef.current, [key]: trimmed }
     answersRef.current = newAnswers
     setAnswers(newAnswers)
-    setAnswerSource((prev) => ({ ...prev, [key]: source }))
     setFinalTranscript('')
     setInterimTranscript('')
     setTextInput('')
-    setShowTextFallback(false)
 
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1)
@@ -272,8 +256,7 @@ export function DebriefPage() {
 
   const statusLabel = (() => {
     if (isRecording) return 'listening'
-    if (showTextFallback && textInput.trim()) return 'done'
-    if (finalTranscript.trim()) return 'done'
+    if (textInput.trim() || finalTranscript.trim()) return 'done'
     return 'idle'
   })()
 
@@ -393,104 +376,49 @@ export function DebriefPage() {
           </div>
 
           <div className="mt-6 flex flex-1 flex-col items-center px-6">
-            {!showTextFallback ? (
-              <MicButton recording={isRecording} onToggle={handleMicToggle} />
-            ) : (
-              <textarea
-                value={textInput}
-                onChange={handleTextInputChange}
-                placeholder="Type your answer here..."
-                rows={5}
-                aria-label="Type your answer"
-                className="h-28 w-full resize-none rounded-2xl border border-mend-border bg-white p-4 text-sm text-mend-textPrimary focus:border-mend-green focus:outline-none focus:ring-1 focus:ring-mend-green"
-              />
-            )}
+            <MicButton recording={isRecording} onToggle={handleMicToggle} />
 
             <div className="mt-3 min-h-[1.25rem] text-sm">
-              {showTextFallback ? (
-                <p className="text-mend-textMuted">Type your response below</p>
-              ) : (
-                <>
-                  {statusLabel === 'listening' && (
-                    <p className="font-medium text-mend-green">
-                      Listening...
-                      <span className="ml-0.5 inline-block animate-pulse">|</span>
-                    </p>
-                  )}
-                  {statusLabel === 'idle' && (
-                    <p className="text-mend-textMuted">Tap to speak</p>
-                  )}
-                  {statusLabel === 'done' && (
-                    <p className="font-medium text-mend-green">Got it ✓</p>
-                  )}
-                </>
+              {statusLabel === 'listening' && (
+                <p className="font-medium text-mend-green">
+                  Listening...
+                  <span className="ml-0.5 inline-block animate-pulse">|</span>
+                </p>
+              )}
+              {statusLabel === 'idle' && (
+                <p className="text-mend-textMuted">Tap to speak or type below</p>
+              )}
+              {statusLabel === 'done' && (
+                <p className="font-medium text-mend-green">Got it ✓</p>
               )}
             </div>
 
-            <div className="mt-4 min-h-20 w-full rounded-2xl border border-mend-border bg-white p-4">
+            <textarea
+              value={textInput}
+              onChange={handleTextInputChange}
+              placeholder="Type your answer here..."
+              rows={4}
+              aria-label="Type your answer"
+              className="mt-4 h-28 w-full resize-none rounded-2xl border border-mend-border bg-white p-4 text-sm text-mend-textPrimary focus:border-mend-green focus:outline-none focus:ring-1 focus:ring-mend-green"
+            />
+
+            <div className="mt-4 min-h-16 w-full rounded-2xl border border-mend-border bg-white p-4">
               {interimTranscript ? (
                 <p className="text-sm italic leading-relaxed text-gray-400">{interimTranscript}</p>
-              ) : finalTranscript || textInput ? (
-                <p className="text-sm leading-relaxed text-mend-textPrimary">{finalTranscript || textInput}</p>
+              ) : textInput.trim() ? (
+                <p className="text-sm leading-relaxed text-mend-textPrimary">{textInput}</p>
               ) : (
                 <p className="text-sm italic text-mend-textMuted">Your answer will appear here...</p>
               )}
             </div>
 
-            {(finalTranscript || textInput) && (
+            {textInput.trim() && (
               <button
                 type="button"
                 className="mt-2 cursor-pointer text-xs text-mend-textMuted transition hover:text-mend-red"
                 onClick={handleRedo}
               >
-                {showTextFallback ? '↩ Clear answer' : '↩ Clear and re-record'}
-              </button>
-            )}
-
-            {!showTextFallback ? (
-              <button
-                type="button"
-                className="mt-3 cursor-pointer text-xs text-mend-blue transition-opacity hover:opacity-80"
-                onClick={() => {
-                  if (!entry) return
-                  const k = entry.prompt
-                  const v = (finalTranscript || textInput).trim()
-                  setShowTextFallback(true)
-                  if (v) {
-                    setTextInput(v)
-                    setAnswers((prev) => {
-                      const next = { ...prev, [k]: v }
-                      answersRef.current = next
-                      return next
-                    })
-                    setAnswerSource((prev) => ({ ...prev, [k]: 'text' }))
-                  }
-                }}
-              >
-                Prefer to type? →
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="mt-3 cursor-pointer text-xs text-mend-blue transition-opacity hover:opacity-80"
-                onClick={() => {
-                  if (!entry) return
-                  const k = entry.prompt
-                  const v = textInput.trim()
-                  setShowTextFallback(false)
-                  if (v) {
-                    setFinalTranscript(v)
-                    setAnswers((prev) => {
-                      const next = { ...prev, [k]: v }
-                      answersRef.current = next
-                      return next
-                    })
-                    setAnswerSource((prev) => ({ ...prev, [k]: 'voice' }))
-                  }
-                  setTextInput('')
-                }}
-              >
-                Use voice instead ←
+                ↩ Clear answer
               </button>
             )}
           </div>
